@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  userId    Int      @id @default(autoincrement()) @map("userId")
+  email     String   @unique @map("email")
+  password  String   @map("password")
+
+  userInfos UserInfos? // 사용자(Users) 테이블과 사용자 정보(UserInfos) 테이블이 1:1 관계를 맺습니다.
+  character Character[] // 사용자(Users) 테이블과 캐릭터(Character) 테이블이 1:N 관계를 맺습니다.
+  item     Item[]      // 사용자(Users) 테이블과 아이템(Item) 테이블이 1:N 관계를 맺습니다.
+
+  @@map("Users")
+}
+
+model UserInfos {
+  userInfoId   Int      @id @default(autoincrement()) @map("userInfoId")
+  userId       Int      @unique @map("userId")
+  name         String   @map("name")
+  age          Int?     @map("age")  
+  user Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("UserInfos")
+}
+
+model Character {
+  characterId Int               @id @default(autoincrement()) @map("characterId")
+  userId      Int               @map("userId") // 사용자(Users) 테이블을 참조하는 외래키
+  name        String            @unique @map("name")
+  hp          Int               @default(100)   @map("hp")
+  power       Int               @default(10)    @map("power")
+  money       Int               @default(10000) @map("money")
+  user Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("Character")
+}
+
+model Item {
+  itemId    Int      @id @default(autoincrement()) @map("itemId")
+  userId    Int      @map("userId") // 사용자(Users) 테이블을 참조하는 외래키
+  name      String   @unique @map("name")
+  hp        Int      @map("hp")
+  power     Int      @map("power")
+  price     Int      @map("price")
+  user Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("Item")
+}
